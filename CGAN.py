@@ -112,17 +112,18 @@ for epoch in range(epochs):
         g_loss.backward()
         optG.step()
         # Train discriminator
-        try:    
-            optD.zero_grad()
-            y_real = disc(data,target) # train discriminator on real data
-            d_real_loss = disc.loss(y_real,real_label)
-            y_fake_d = disc(x_fake.detach() , x_fake_labels) # predict labels of generated images for train discriminator
-            d_fake_loss = disc.loss(y_fake_d , fake_label)
-            d_loss = (d_real_loss + d_fake_loss) / 2
-            print("d_loss:{:.4}".format(d_loss)) # delete it
-            d_loss.backward()
-            optD.step()
-        except: continue
+        # try:    
+        print("data.shape:{}".format(data.shape))
+        optD.zero_grad()
+        y_real = disc(data,target) # train discriminator on real data
+        d_real_loss = disc.loss(y_real,real_label)
+        y_fake_d = disc(x_fake.detach() , x_fake_labels) # predict labels of generated images for train discriminator
+        d_fake_loss = disc.loss(y_fake_d , fake_label)
+        d_loss = (d_real_loss + d_fake_loss) / 2
+        print("d_loss:{:.4}".format(d_loss)) # delete it
+        d_loss.backward()
+        optD.step()
+        # except: continue
 
 
     print('Epoch [{}/{}] loss_D: {:.4f} loss_G: {:.4f}'.format(
