@@ -129,3 +129,11 @@ for epoch in range(epochs):
                     g_loss.mean().item()))
 
 
+checkpoint = { 
+    'epoch': epochs,
+    'generator': gen.state_dict(),
+    'discriminator': disc.state_dict(), 
+    'optimizer_generator': optG.state_dict(),
+    'optimizer_discriminator':optD.state_dict(),
+    'lr_sched': lr}
+torch.save(checkpoint, '../models/GAN.pth')
