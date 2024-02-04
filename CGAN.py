@@ -25,7 +25,6 @@ train = tv.datasets.FashionMNIST(
     transform=ToTensor()
 )
 trainLoader = DataLoader(train,batch_size=batch_size,shuffle=True)
-print("trainloader: {}".format(len(trainLoader))) # delete it - for test
 
 
 # Generator
@@ -77,7 +76,7 @@ class discriminator(nn.Module):
             layers.append(nn.LeakyReLU(0.2,inplace=True))
         return layers
     def forward(self,image,labels):
-        x = torch.cat((self.label_embedding(labels), image), -1)
+        x = torch.cat((image.view(image.size(0), -1), self.label_embedding(labels)), -1)
         x = self.model(x)
         return x
     def loss(self,output,label):
@@ -113,7 +112,6 @@ for epoch in range(epochs):
         optG.step()
         # Train discriminator
         # try:    
-        print("data.shape:{}".format(data.shape))
         optD.zero_grad()
         y_real = disc(data,target) # train discriminator on real data
         d_real_loss = disc.loss(y_real,real_label)
