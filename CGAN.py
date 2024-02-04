@@ -25,6 +25,7 @@ train = tv.datasets.FashionMNIST(
     transform=ToTensor()
 )
 trainLoader = DataLoader(train,batch_size=batch_size,shuffle=True)
+print("trainloader: {}".format(len(trainLoader))) # delete it - for test
 
 
 # Generator
@@ -118,6 +119,7 @@ for epoch in range(epochs):
             y_fake_d = disc(x_fake.detach() , x_fake_labels) # predict labels of generated images for train discriminator
             d_fake_loss = disc.loss(y_fake_d , fake_label)
             d_loss = (d_real_loss + d_fake_loss) / 2
+            print("d_loss:{:.4}".format(d_loss)) # delete it
             d_loss.backward()
             optD.step()
         except: continue
