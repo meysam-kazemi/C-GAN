@@ -89,51 +89,50 @@ disc = discriminator() # define discriminator
 optG = torch.optim.Adam(gen.parameters(),lr=lr,betas=(0.5,0.999))
 optD = torch.optim.Adam(disc.parameters(),lr=lr,betas=(0.5,0.999))
 
+if __name__ == "__mane__":
+    # Train
+    gen.train() ; disc.train()
+
+    for epoch in range(epochs):
+        for i , (data,target) in enumerate(trainLoader):
+            data , target = data.to(device) , target.to(device)
+            real_label = torch.full((batch_size,1),1.,device=device)
+            fake_label = torch.full((batch_size,1),0.,device=device)
+
+            
+            # Train Generator
+            optG.zero_grad() 
+            noise = torch.randn(batch_size,latent_dim,device=device)
+            x_fake_labels = torch.randint(0,classes,(batch_size,),device=device) # generate a random class label
+            x_fake = gen(noise , x_fake_labels) # generate a fake image
+            y_fake_gen = disc(x_fake , x_fake_labels) # predict labels of generated images
+            g_loss = disc.loss(y_fake_gen , real_label) 
+            g_loss.backward()
+            optG.step()
+            # Train discriminator
+            try:    
+                optD.zero_grad()
+                y_real = disc(data,target) # train discriminator on real data
+                d_real_loss = disc.loss(y_real,real_label)
+                y_fake_d = disc(x_fake.detach() , x_fake_labels) # predict labels of generated images for train discriminator
+                d_fake_loss = disc.loss(y_fake_d , fake_label)
+                d_loss = (d_real_loss + d_fake_loss) / 2
+                d_loss.backward()
+                optD.step()
+            except: continue
 
 
-# Train
-gen.train() ; disc.train()
-
-for epoch in range(epochs):
-    for i , (data,target) in enumerate(trainLoader):
-        data , target = data.to(device) , target.to(device)
-        real_label = torch.full((batch_size,1),1.,device=device)
-        fake_label = torch.full((batch_size,1),0.,device=device)
-
-        
-        # Train Generator
-        optG.zero_grad() 
-        noise = torch.randn(batch_size,latent_dim,device=device)
-        x_fake_labels = torch.randint(0,classes,(batch_size,),device=device) # generate a random class label
-        x_fake = gen(noise , x_fake_labels) # generate a fake image
-        y_fake_gen = disc(x_fake , x_fake_labels) # predict labels of generated images
-        g_loss = disc.loss(y_fake_gen , real_label) 
-        g_loss.backward()
-        optG.step()
-        # Train discriminator
-        try:    
-            optD.zero_grad()
-            y_real = disc(data,target) # train discriminator on real data
-            d_real_loss = disc.loss(y_real,real_label)
-            y_fake_d = disc(x_fake.detach() , x_fake_labels) # predict labels of generated images for train discriminator
-            d_fake_loss = disc.loss(y_fake_d , fake_label)
-            d_loss = (d_real_loss + d_fake_loss) / 2
-            d_loss.backward()
-            optD.step()
-        except: continue
+        print('Epoch [{}/{}] loss_D: {:.4f} loss_G: {:.4f}'.format(
+                        epoch+1, epochs,
+                        d_loss.mean().item(),
+                        g_loss.mean().item()))
 
 
-    print('Epoch [{}/{}] loss_D: {:.4f} loss_G: {:.4f}'.format(
-                    epoch+1, epochs,
-                    d_loss.mean().item(),
-                    g_loss.mean().item()))
-
-
-checkpoint = { 
-    'epoch': epochs,
-    'generator': gen.state_dict(),
-    'discriminator': disc.state_dict(), 
-    'optimizer_generator': optG.state_dict(),
-    'optimizer_discriminator':optD.state_dict(),
-    'lr_sched': lr}
-torch.save(checkpoint, '../models/GAN.pth')
+    checkpoint = { 
+        'epoch': epochs,
+        'generator': gen.state_dict(),
+        'discriminator': disc.state_dict(), 
+        'optimizer_generator': optG.state_dict(),
+        'optimizer_discriminator':optD.state_dict(),
+        'lr_sched': lr}
+    torch.save(checkpoint, '../models/GAN.pth')
